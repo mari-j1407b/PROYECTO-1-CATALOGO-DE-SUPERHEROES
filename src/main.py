@@ -284,14 +284,12 @@ class MundoComic(QMainWindow):
             elementos.append(actual.dato)
             actual = actual.siguiente
 
-        # 🔥 ORDEN A-Z
         if "a" in opcion and "z" in opcion:
             elementos.sort(key=lambda x: x.titulo.lower())
 
         elif "z" in opcion and "a" in opcion:
             elementos.sort(key=lambda x: x.titulo.lower(), reverse=True)
 
-        # 🔥 ORDEN POR AÑO
         elif "fecha" in opcion:
             elementos.sort(key=lambda x: int(x.fecha) if str(x.fecha).isdigit() else 0)
 
@@ -299,17 +297,12 @@ class MundoComic(QMainWindow):
         for e in elementos:
             nueva_lista.insertar(e)
 
-        # 🔥 GUARDAR RESULTADO
         if self.lista_comics_filtrada:
             self.lista_comics_filtrada = nueva_lista
         else:
             self.lista_comics = nueva_lista
 
         self.actualizar_labels_comics()
-
-        except Exception as e:
-            print(f"ERROR: {e}")
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
