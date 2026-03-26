@@ -192,36 +192,38 @@ class MundoComic(QMainWindow):
 
     def llenar_datos(self, lista_labels, lista, num_pag, atributo, subcarpeta):
         try:
-            puntero = lista.cabeza
+                puntero = lista.cabeza
 
-            # Saltar páginas
-            for _ in range(num_pag * 10):
-                if puntero:
-                    puntero = puntero.siguiente
+                # Saltar páginas
+                for _ in range(num_pag * 10):
+                    if puntero:
+                        puntero = puntero.siguiente
 
-            for label in lista_labels:
-                contenedor = label.parent()
-                boton = contenedor.findChild(QToolButton)
-                
-                if puntero:
-                    texto = getattr(puntero.dato, atributo, "Sin Nombre")
-                    imagen = getattr(puntero.dato, "imagen", "placeholder.jpg")
-
-                    label.setText(f'"{texto}"')
-
-                    ruta_imagen = os.path.join("assets", subcarpeta, imagen)
-
-                    if boton:
-                        if os.path.exists(ruta_imagen):
-                            boton.setIcon(QIcon(ruta_imagen))
-                        else:
-                            boton.setIcon(QIcon())
+                for label in lista_labels:
+                    contenedor = label.parent()
+                    boton = contenedor.findChild(QToolButton)
                     
-                    puntero = puntero.siguiente
-                else:
-                    label.setText("---")
-                    if boton:
-                        boton.setIcon(QIcon())
+                    if puntero:
+                        texto = getattr(puntero.dato, atributo, "Sin Nombre")
+                        imagen = getattr(puntero.dato, "imagen", "placeholder.jpg")
+
+                        label.setText(f'"{texto}"')
+
+                        ruta_imagen = os.path.join("assets", subcarpeta, imagen)
+
+                        if boton:
+                            if os.path.exists(ruta_imagen):
+                                boton.setIcon(QIcon(ruta_imagen))
+                            else:
+                                boton.setIcon(QIcon())
+                        
+                        puntero = puntero.siguiente
+                    else:
+                        label.setText("---")
+                        if boton:
+                            boton.setIcon(QIcon())
+        except Exception as e:
+            print(f"¡ERROR CRÍTICO en llenar_datos!: {e}")
     def buscar_comics(self):
         print(" SE EJECUTÓ BUSCAR COMICS")
 
