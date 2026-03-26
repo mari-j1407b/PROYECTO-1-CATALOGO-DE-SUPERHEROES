@@ -151,46 +151,27 @@ class MundoComic(QMainWindow):
         sw = self.ui.stackedWidget_2
         indice = sw.currentIndex()
         
+        # Esto busca TODOS los labels que estén en la página que se ve ahorita
         pagina_actual = sw.currentWidget()
-
-        # 🔥 SOLO labels de cards
-        labels_en_pantalla = [
-            l for l in pagina_actual.findChildren(QLabel)
-            if l.parent().findChild(QToolButton)
-        ]
-
+        labels_en_pantalla = pagina_actual.findChildren(QLabel)
+        
+        # Los ordenamos por nombre para que no se revuelvan (label_1, label_2...)
         labels_en_pantalla.sort(key=lambda x: x.objectName())
 
         lista = self.lista_comics_filtrada if self.lista_comics_filtrada else self.lista_comics
-        (
-            labels_en_pantalla,
-            self.lista_comics,
-            indice,
-            "titulo",
-            "comics"
-        )
+        self.llenar_datos(labels_en_pantalla, lista, indice, "titulo", "comics")
 
     def actualizar_labels_personajes(self):
         sw = self.ui.stackedWidget_3
         indice = sw.currentIndex()
         
         pagina_actual = sw.currentWidget()
-
-        labels_en_pantalla = [
-            l for l in pagina_actual.findChildren(QLabel)
-            if l.parent().findChild(QToolButton)
-        ]
-
+        labels_en_pantalla = pagina_actual.findChildren(QLabel)
+        
         labels_en_pantalla.sort(key=lambda x: x.objectName())
 
-        self.llenar_datos(
-            labels_en_pantalla,
-            self.lista_personajes,
-            indice,
-            "nombre",
-            "personajes"
-        )
-
+        lista = self.lista_personajes_filtrada if self.lista_personajes_filtrada else self.lista_personajes
+        self.llenar_datos(labels_en_pantalla, lista, indice, "nombre", "personajes")
     def llenar_datos(self, lista_labels, lista, num_pag, atributo, subcarpeta):
         try:
                 puntero = lista.cabeza
