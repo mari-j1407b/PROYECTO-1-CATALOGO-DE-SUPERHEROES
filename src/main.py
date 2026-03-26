@@ -161,7 +161,8 @@ class MundoComic(QMainWindow):
 
         labels_en_pantalla.sort(key=lambda x: x.objectName())
 
-        self.llenar_datos(
+        lista = self.lista_comics_filtrada if self.lista_comics_filtrada else self.lista_comics
+        (
             labels_en_pantalla,
             self.lista_comics,
             indice,
