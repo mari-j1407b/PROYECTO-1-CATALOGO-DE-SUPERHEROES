@@ -21,15 +21,13 @@ class MundoComic(QMainWindow):
         self.ui.setupUi(self)
         self.lista_comics_filtrada = None
         self.lista_personajes_filtrada = None
-       
-        print("\n--- BOTONES REALES EN LA INTERFAZ ---")
-        for b in self.findChildren(QToolButton):
-            print(b.objectName())
+
+        
+        self.cargar_banners()
         
         self.lista_comics = ListaDoble()
         self.lista_personajes = ListaDoble()
         
-     
         self.cargar_datos_en_estructuras()
         
         # Conexiones
@@ -41,10 +39,6 @@ class MundoComic(QMainWindow):
 
         self.ui.btn_sig_personajes.clicked.connect(self.cambiar_pag_personajes_sig)
         self.ui.btn_ant_personajes.clicked.connect(self.cambiar_pag_personajes_ant)
-        # Conexiones de busqueda
-        self.ui.stackedWidget.setCurrentIndex(1) # Ir a Personajes
-        self.actualizar_labels_personajes()
-        self.actualizar_labels_comics()
         #  BUSQUEDA
         self.ui.lineEdit.returnPressed.connect(self.buscar_comics)
         self.ui.lineEdit_2.returnPressed.connect(self.buscar_personajes)
@@ -53,21 +47,49 @@ class MundoComic(QMainWindow):
         self.ui.comboBox.currentIndexChanged.connect(self.ordenar_comics)
         self.ui.comboBox_2.currentIndexChanged.connect(self.ordenar_comics)
 
+        # Estado inicial
+        self.ui.stackedWidget.setCurrentIndex(1)
+        self.actualizar_labels_personajes()
+        self.actualizar_labels_comics()
+
+    # --- BANNERS ---
+    def cargar_banners(self):
+        try:
+            ruta_banner = os.path.join("assets", "img", "mundo comic.png")
+
+            if os.path.exists(ruta_banner):
+                pixmap = QPixmap(ruta_banner)
+
+                if hasattr(self.ui, "label_9"):
+                    self.ui.label_9.setPixmap(pixmap)
+                    self.ui.label_9.setScaledContents(True)
+
+                if hasattr(self.ui, "label_20"):
+                    self.ui.label_20.setPixmap(pixmap)
+                    self.ui.label_20.setScaledContents(True)
+            else:
+                print("⚠️ No se encontró mundo comic.png en assets/img")
+
+        except Exception as e:
+            print(f"Error cargando banner: {e}")
+
     # --- CARGA ---
     def cargar_datos_en_estructuras(self):
-        # 1. CARGAR PERSONAJES
         try:
             ruta_p = 'data/personajes_locales.json'
             if os.path.exists(ruta_p):
                 with open(ruta_p, 'r', encoding='utf-8') as f:
                     for p in json.load(f):
                         nombre = p.get('name', 'N/A')
-                        # Regla Mari: minúsculas y guiones
                         img_name = nombre.lower().replace(" ", "-") + ".jpg"
                         
-                        obj_p = Personaje(p.get('id'), nombre, p.get('deck', 'Sin descripción'), img_name)
+                        obj_p = Personaje(
+                            p.get('id'),
+                            nombre,
+                            p.get('deck', 'Sin descripción'),
+                            img_name
+                        )
                         self.lista_personajes.insertar(obj_p)
-            print(f"✅ Cargados {self.lista_personajes.longitud} personajes.")
         except Exception as e:
             print(f"Error cargando personajes: {e}")
 
@@ -76,14 +98,18 @@ class MundoComic(QMainWindow):
             if os.path.exists(ruta_c):
                 with open(ruta_c, 'r', encoding='utf-8') as f:
                     for c in json.load(f):
-                        # En cómics el nombre suele venir en volume -> name
                         nombre_v = c.get('volume', {}).get('name', 'Cómic')
-                        # Regla Mari: minúsculas, guiones y sufijo -comic
                         img_name = nombre_v.lower().replace(" ", "-") + "-comic.jpg"
                         
-                        obj_c = Comic(c.get('id'), nombre_v, c.get('deck', 'N/A'), "2026", "N/A", img_name)
+                        obj_c = Comic(
+                            c.get('id'),
+                            nombre_v,
+                            c.get('deck', 'N/A'),
+                            "2026",
+                            "N/A",
+                            img_name
+                        )
                         self.lista_comics.insertar(obj_c)
-            print(f"✅ Cargados {self.lista_comics.longitud} cómics.")
         except Exception as e:
             print(f"Error cargando cómics: {e}")
 
@@ -125,77 +151,77 @@ class MundoComic(QMainWindow):
         sw = self.ui.stackedWidget_2
         indice = sw.currentIndex()
         
-        # Esto busca TODOS los labels que estén en la página que se ve ahorita
         pagina_actual = sw.currentWidget()
-        labels_en_pantalla = pagina_actual.findChildren(QLabel)
-        
-        # Los ordenamos por nombre para que no se revuelvan (label_1, label_2...)
+
+        # 🔥 SOLO labels de cards
+        labels_en_pantalla = [
+            l for l in pagina_actual.findChildren(QLabel)
+            if l.parent().findChild(QToolButton)
+        ]
+
         labels_en_pantalla.sort(key=lambda x: x.objectName())
 
-        lista = self.lista_comics_filtrada if self.lista_comics_filtrada else self.lista_comics
-        self.llenar_datos(labels_en_pantalla, lista, indice, "titulo", "comics")
+        self.llenar_datos(
+            labels_en_pantalla,
+            self.lista_comics,
+            indice,
+            "titulo",
+            "comics"
+        )
 
     def actualizar_labels_personajes(self):
         sw = self.ui.stackedWidget_3
         indice = sw.currentIndex()
         
         pagina_actual = sw.currentWidget()
-        labels_en_pantalla = pagina_actual.findChildren(QLabel)
-        
+
+        labels_en_pantalla = [
+            l for l in pagina_actual.findChildren(QLabel)
+            if l.parent().findChild(QToolButton)
+        ]
+
         labels_en_pantalla.sort(key=lambda x: x.objectName())
 
-        lista = self.lista_personajes_filtrada if self.lista_personajes_filtrada else self.lista_personajes
-        self.llenar_datos(labels_en_pantalla, lista, indice, "nombre", "personajes")
-
+        self.llenar_datos(
+            labels_en_pantalla,
+            self.lista_personajes,
+            indice,
+            "nombre",
+            "personajes"
+        )
 
     def llenar_datos(self, lista_labels, lista, num_pag, atributo, subcarpeta):
         try:
             puntero = lista.cabeza
-            
-            # 1. Contar cuántos datos hay realmente (Verificación)
-            total = 0
-            temp = lista.cabeza
-            while temp:
-                total += 1
-                temp = temp.siguiente
-            print(f"DEBUG: Tienes {total} elementos en la lista de {subcarpeta}")
 
-            # 2. Saltar a la página correcta
+            # Saltar páginas
             for _ in range(num_pag * 10):
-                if puntero: 
+                if puntero:
                     puntero = puntero.siguiente
 
-            # 3. Llenar los labels
-            for i, label in enumerate(lista_labels):
-                # Verificamos que el contenedor tenga un botón
+            for label in lista_labels:
                 contenedor = label.parent()
                 boton = contenedor.findChild(QToolButton)
                 
                 if puntero:
                     texto = getattr(puntero.dato, atributo, "Sin Nombre")
-                    imagen = getattr(puntero.dato, "imagen", "placeholder.png")
+                    imagen = getattr(puntero.dato, "imagen", "placeholder.jpg")
+
                     label.setText(f'"{texto}"')
 
-                    # Construimos la ruta
                     ruta_imagen = os.path.join("assets", subcarpeta, imagen)
 
                     if boton:
                         if os.path.exists(ruta_imagen):
                             boton.setIcon(QIcon(ruta_imagen))
                         else:
-                            print(f"DEBUG: No hallé la foto: {ruta_imagen}")
-                            # Si tienes un placeholder, úsalo; si no, limpia el icono
-                            boton.setIcon(QIcon()) 
+                            boton.setIcon(QIcon())
                     
                     puntero = puntero.siguiente
                 else:
-                    # Limpiar si ya no hay más personajes
                     label.setText("---")
                     if boton:
                         boton.setIcon(QIcon())
-
-        except Exception as e:
-            print(f"¡ERROR CRÍTICO en llenar_datos!: {e}")
     def buscar_comics(self):
         print(" SE EJECUTÓ BUSCAR COMICS")
 
@@ -280,6 +306,10 @@ class MundoComic(QMainWindow):
             self.lista_comics = nueva_lista
 
         self.actualizar_labels_comics()
+
+        except Exception as e:
+            print(f"ERROR: {e}")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
